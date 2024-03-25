@@ -1,0 +1,27 @@
+GowinSynthesis start
+Running parser ...
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/adc.v'
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/dac.v'
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/dba.v'
+WARN  (EX3373) : Port 'in_r' must not be declared to be an array("/home/aarys/GreenRoomMonitor/fpga2/src/dba.v":11)
+WARN  (EX3373) : Port 'in_i' must not be declared to be an array("/home/aarys/GreenRoomMonitor/fpga2/src/dba.v":12)
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/sdft.v'
+WARN  (EX3373) : Port 'frequency_bins_real' must not be declared to be an array("/home/aarys/GreenRoomMonitor/fpga2/src/sdft.v":47)
+WARN  (EX3373) : Port 'frequency_bins_imag' must not be declared to be an array("/home/aarys/GreenRoomMonitor/fpga2/src/sdft.v":48)
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/top.v'
+ERROR (EX3998) : Cannot access memory 'bin_out_r' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":46)
+ERROR (EX3998) : Cannot access memory 'bin_out_i' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":46)
+ERROR (EX3998) : Cannot access memory 'buff_out_r' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":49)
+ERROR (EX3998) : Cannot access memory 'buff_out_i' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":49)
+ERROR (EX3998) : Cannot access memory 'avg' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":49)
+ERROR (EX3994) : Cannot assign to memory 'buff_out_r' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":80)
+ERROR (EX3998) : Cannot access memory 'bin_out_r' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":80)
+ERROR (EX3356) : Unpacked value/target cannot be used in an assignment("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":80)
+ERROR (EX3994) : Cannot assign to memory 'buff_out_i' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":81)
+ERROR (EX3998) : Cannot access memory 'bin_out_i' directly("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":81)
+ERROR (EX3356) : Unpacked value/target cannot be used in an assignment("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":81)
+ERROR (EX3872) : 'updated' is not declared("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":83)
+ERROR (EX3928) : Module 'top' is ignored due to previous errors("/home/aarys/GreenRoomMonitor/fpga2/src/top.v":88)
+Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/top.v' ignored due to errors
+Analyzing Verilog file '/home/aarys/GreenRoomMonitor/fpga2/src/twiddle_rom.v'
+GowinSynthesis finish

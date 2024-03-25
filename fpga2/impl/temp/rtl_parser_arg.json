@@ -1,0 +1,37 @@
+{
+ "Device" : "GW1N-1",
+ "Files" : [
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/adc.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/dac.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/dba.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/sdft.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/top.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "/home/aarys/GreenRoomMonitor/fpga2/src/twiddle_rom.v",
+   "Type" : "verilog"
+  }
+ ],
+ "IncludePath" : [
+
+ ],
+ "LoopLimit" : 2000,
+ "ResultFile" : "/home/aarys/GreenRoomMonitor/fpga2/impl/temp/rtl_parser.result",
+ "Top" : "",
+ "VerilogStd" : "verilog_2001",
+ "VhdlStd" : "vhdl_93"
+}
