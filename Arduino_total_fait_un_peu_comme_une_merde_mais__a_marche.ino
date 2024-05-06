@@ -11,17 +11,22 @@ uint16_t NO2; //ppm
 uint16_t C2H5OH; //ppm
 uint16_t COV; //ppm
 uint16_t CO; //ppm
-//uint16_t son; //dB
+uint16_t son; //dB
 } Trame_t ;
 
 Trame_t ma_trame;
 LoRaModem modem;
-
+//son
+int analogPin = A4;
+float val;
+float dif_db65;
+float db;
+//fin son
 GAS_GMXXX<TwoWire> gas;
 int entreeT = A1;
 float VoutT =0;
 
-int compteur=0;
+int compteur=1;
 float cCO2;// les valeurs moyennes des gaz
 float cNO2;
 float cC2H5OH;
@@ -52,7 +57,7 @@ float           CO2Curve[3]  =  {2.602,ZERO_POINT_VOLTAGE,(REACTION_VOLTGAE/(2.6
                                                      //data format:{ x, y, slope}; point1: (lg400, 0.324), point2: (lg4000, 0.280)
                                                      //slope = ( reaction voltage ) / (log400 –log1000)
 
-
+float mdb;
 
 void setup() {
   //connexion à lora
@@ -84,39 +89,42 @@ void setup() {
   gas.begin(Wire, 0x08); // use the hardware I2C
   pinMode(BOOL_PIN, INPUT);                        //set pin to input
   digitalWrite(BOOL_PIN, HIGH);                    //turn on pullup resistors
-}
- 
-void loop() {
-  compteur+=1;
+  //moyennes
   cCO2=0;
   cNO2=0;
   cC2H5OH=0;
   cCOV=0;
   cCO=0;
+  mdb=0;
+}
+ 
+void loop() {
+  compteur+=1;
+
   // main code 4 gaz:
 
   // GM102B NO2 sensor
-  int valNO2 = gas.getGM102B();
+  float valNO2 = gas.getGM102B();
 
-  if (valNO2 > 999) valNO2 = 999;
-  cNO2= cNO2+ valNO2/60.0;
+  if (valNO2 > 999) valNO2 = 999.0;
+  cNO2= cNO2+ float(float(valNO2)/float(60.0));
   
   // GM302B C2H5CH sensor
-  int valC2H5CH = gas.getGM302B();
+  float valC2H5CH = gas.getGM302B();
   
-  if (valC2H5CH > 999) valC2H5CH = 999;
-  cC2H5OH=cC2H5OH+ valC2H5CH/60.0;
+  if (valC2H5CH > 999) valC2H5CH = 999.0;
+  cC2H5OH=cC2H5OH+ float(float(valC2H5CH)/float(60.0));
   
   // GM502B VOC sensor
-  int valVOC = gas.getGM502B();
-  if (valVOC > 999) valVOC = 999;
-  cCOV=cCOV+ valVOC/60.0;
+  float valVOC = gas.getGM502B();
+  if (valVOC > 999) valVOC = 999.0;
+  cCOV=cCOV+ float(float(valVOC)/float(60.0));
   
   // GM702B CO sensor
-  int valCO = gas.getGM702B();
-  if (valCO > 999) valCO = 999;
+  float valCO = gas.getGM702B();
+  if (valCO > 999) valCO = 999.0;
   
-  cCO=cCO+valCO/60.0;
+  cCO=cCO+float(float(valCO)/float(60.0));
 
   // Print the readings to the console
   Serial.print("NO2: ");
@@ -145,7 +153,7 @@ void loop() {
   
 
   // main code CO2
-  int percentage;
+  float percentage;
   float volts;
   volts = MGRead(MG_PIN);
 
@@ -154,10 +162,10 @@ void loop() {
   Serial.print("CO2: ");
   if (percentage == -1) {
       Serial.print( "<400" );
-      cCO2= cCO2+399/60.0;
+      cCO2= cCO2+ float(float(399.0)/float(60.0));
   } else {
       Serial.print(percentage);
-      cCO2=cCO2+ percentage/60.0;
+      cCO2=cCO2+ float(float(percentage)/float(60.0));
       
   }
 
@@ -170,15 +178,36 @@ void loop() {
       Serial.print( "=====BOOL is LOW======" );
   }
 
+
+// boucle son + délai
+for (int i=0; i<10; i=i+1) { 
+ mdb=mdb + float(1/600)* float(75+(20*log((3.3*analogRead(analogPin)/1023)/0.50)));
+ delay(100);
+
+
+
+}
+
+
+
   Serial.print("\n");
   if (compteur==60){ //au bout de 60 secondes on envoit les données 
   ma_trame.NO2=uint16_t(cNO2);
   ma_trame.C2H5OH=uint16_t(cC2H5OH);
   ma_trame.COV=uint16_t(cCOV);
   ma_trame.CO=uint16_t(cCO);
+  ma_trame.CO2=uint16_t(cCO2);
   ma_trame.temperature= uint16_t(10*(VoutT*13.2-2.25))  ;
+  ma_trame.son=uint16_t(mdb);
   modem.beginPacket();
   modem.write( (byte* )& ma_trame, sizeof(ma_trame) ) ;
+  compteur=1;
+  cCO2=0;
+  cNO2=0;
+  cC2H5OH=0;
+  cCOV=0;
+  cCO=0;
+  mdb=0;
   int err = modem.endPacket();
   if (err > 0) {
     Serial.println("Message envoyé correctement");
@@ -187,7 +216,7 @@ void loop() {
   }
   ;}
  
-delay(1000); // on attends une seconde avant de prendre les prochaines mesures 
+ // on attends une seconde avant de prendre les prochaines mesures 
 
 }
 
