@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2i-2 - 221B - Greenroom Monitor</title>
+    <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="./data_temp.js"></script>
+    <script src="./data_gaz.js"></script>
+    <script src="./data_bruit.js"></script>
+    <script src="./Highcharts.js"></script>
+    <style>
+      .modal {
+        position: absolute;
+        z-index: 200;
+        background-color: rgba(0, 0, 0, 0.2);
+
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal > div {
+
+      }
+
+      .blurred {
+        filter: blur(5px);
+      }
+    </style>
+</head>
+<body>
+  <script>
+    function validateModal() {
+      let ola = document.getElementById("room");
+      let sel = ola.value;
+
+      console.log(sel);
+
+      document.getElementById('container-1').innerHTML = '';
+      document.getElementById('container-2').innerHTML = '';
+      document.getElementById('container-3').innerHTML = '';
+
+      buildLineChart('container-1', TEMP_TIME_SERIES.batiment1[sel].capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1[sel].loc);
+      buildLineChart('container-2', NOISE_TIME_SERIES.batiment1[sel].capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES.batiment1[sel].loc);
+      buildMultiLineChart('container-3', GAZ_TIME_SERIES.batiment1[sel].capteur1.donnees, GAZ_TIME_SERIES.batiment1[sel].loc);
+
+      document.getElementById("modal").outerHTML = "";
+      document.getElementById("main").classList = [];
+    }
+  </script>
+
+  <div class="modal" id="modal">
+    <div>
+      <select id="room">
+        <option value="piece1">Piece1</option>
+        <option value="piece2">Piece2</option>
+      </select>
+      <button onclick="validateModal()"> Valider </button>
+    </div>
+  </div>
+
+  <div id="main" class="blurred">
+    <h1 style="text-align: center;">Graphique sur Données Capteurs</h1>
+    <div id="container-1" class="highcharts-container"></div>
+    <div id="container-2" class="highcharts-container"></div>
+    <div id="container-3" class="highcharts-container"></div>
+  </div>
+  <!-- <figure>
+      <button id='Piece1'>Piece1</button>
+      <button id='Couloir'>Couloir</button>
+      <button id='Exterieur'>Exterieur</button>
+      <button id='Piece2'>Piece2</button>
+  </figure> -->
+</body>
+</html>
