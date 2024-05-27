@@ -11,6 +11,7 @@
     <script src="./data_gaz.js"></script>
     <script src="./data_bruit.js"></script>
     <script src="./Highcharts.js"></script>
+    <script src="./loc.js"></script>
     <style>
       .modal {
         position: absolute;
@@ -40,26 +41,38 @@
       let ola = document.getElementById("room");
       let sel = ola.value;
 
+      let locale = sel.split("/")[0];
+      let room = sel.split("/")[1];
+
       console.log(sel);
 
       document.getElementById('container-1').innerHTML = '';
       document.getElementById('container-2').innerHTML = '';
       document.getElementById('container-3').innerHTML = '';
 
-      buildLineChart('container-1', TEMP_TIME_SERIES.batiment1[sel].capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1[sel].loc);
-      buildLineChart('container-2', NOISE_TIME_SERIES.batiment1[sel].capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES.batiment1[sel].loc);
-      buildMultiLineChart('container-3', GAZ_TIME_SERIES.batiment1[sel].capteur1.donnees, GAZ_TIME_SERIES.batiment1[sel].loc);
+      buildLineChart('container-1', TEMP_TIME_SERIES[locale][room].capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES[locale][room].loc);
+      buildLineChart('container-2', NOISE_TIME_SERIES[locale][room].capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES[locale][room].loc);
+      buildMultiLineChart('container-3', GAZ_TIME_SERIES[locale][room].capteur1.donnees, GAZ_TIME_SERIES[locale][room].loc);
 
       document.getElementById("modal").outerHTML = "";
       document.getElementById("main").classList = [];
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      let room = document.getElementById("room");
+      
+      DIC_LOC.forEach(emplacement => {
+	emplacement.forEach(piece => {
+	  room.innerHTML += `<option value=\"${emplacement}/${piece}\">${emplacement} / ${piece}</option>`
+	})
+      })
+    }
+      
   </script>
 
   <div class="modal" id="modal">
     <div>
       <select id="room">
-        <option value="piece1">Piece1</option>
-        <option value="piece2">Piece2</option>
       </select>
       <button onclick="validateModal()"> Valider </button>
     </div>
