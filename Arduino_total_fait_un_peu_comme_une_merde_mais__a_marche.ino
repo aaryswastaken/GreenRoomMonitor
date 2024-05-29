@@ -17,17 +17,17 @@ uint16_t son; //dB
 Trame_t ma_trame;
 LoRaModem modem;
 //son
-int analogPin = A4;
+int analogPin = A4;                                 //son sur A4
 float val;
 float dif_db65;
-float db;
+float db;     
 //fin son
 GAS_GMXXX<TwoWire> gas;
-int entreeT = A1;
+int entreeT = A1;                                   //température sur A1
 float VoutT =0;
-
+float db600;
 int compteur=1;
-float cCO2;// les valeurs moyennes des gaz
+float cCO2;// les valeurs moyennes des gaz          4 gaz connectés sur sda et scl 
 float cNO2;
 float cC2H5OH;
 float cCO;
@@ -37,7 +37,7 @@ float cCOV;
 #define SECRET_APP_KEY "E5C5ED0C6854B76E2D8BC9140D1C53B0"
 
 //capteurs
-#define         MG_PIN                       (A2)     //define which analog input channel you are going to use
+#define         MG_PIN                       (A2)     //CO2 sur A2
 #define         BOOL_PIN                     (2)
 #define         DC_GAIN                      (8.5)   //define the DC gain of amplifier
 
@@ -46,8 +46,8 @@ float cCOV;
 #define         READ_SAMPLE_TIMES            (5)     //define the time interval(in milisecond) between each samples in
                                                      //normal operation
 //These two values differ from sensor to sensor. user should derermine this value.
-#define         ZERO_POINT_VOLTAGE           (0.176) //define the output of the sensor in volts when the concentration of CO2 is 400PPM
-#define         REACTION_VOLTGAE             (0.030) //define the voltage drop of the sensor when move the sensor from air into 1000ppm CO2
+#define         ZERO_POINT_VOLTAGE           (0.220) //define the output of the sensor in volts when the concentration of CO2 is 400PPM
+#define         REACTION_VOLTGAE             (0.96) //define the voltage drop of the sensor when move the sensor from air into 1000ppm CO2
 
 /*****************************Globals***********************************************/
 float           CO2Curve[3]  =  {2.602,ZERO_POINT_VOLTAGE,(REACTION_VOLTGAE/(2.602-3))};
@@ -73,7 +73,7 @@ void setup() {
   Serial.print("Mon device EUI est: ");
   Serial.println(modem.deviceEUI());
   Serial.flush();
-
+  float db600=0;
   bool connected_to_lorawan = modem.joinOTAA(SECRET_APP_EUI, SECRET_APP_KEY);
 
   if (connected_to_lorawan)
@@ -158,7 +158,7 @@ void loop() {
   volts = MGRead(MG_PIN);
 
 
-  percentage = MGGetPercentage(volts,CO2Curve);
+  percentage = ppm(ZERO_POINT_VOLTAGE,REACTION_VOLTGAE,volts );
   Serial.print("CO2: ");
   if (percentage == -1) {
       Serial.print( "<400" );
@@ -180,9 +180,14 @@ void loop() {
 
 
 // boucle son + délai
-for (int i=0; i<10; i=i+1) { 
- mdb=mdb + float(1/600)* float(75+(20*log((3.3*analogRead(analogPin)/1023)/0.50)));
+for (int i=0; i<10; i=i+1) {
+ db=  float(75+(20*log((3.3*analogRead(analogPin)/1023)/0.50)));
+ db600=float(db/600);
+ mdb=mdb + db600;
  delay(100);
+ Serial.print("\n");
+
+
 
 
 
@@ -252,3 +257,16 @@ int  MGGetPercentage(float volts, float *pcurve)
       return pow(10, ((volts/DC_GAIN)-pcurve[1])/pcurve[2]+pcurve[0]);
    }
 }
+
+
+
+float ppm(float V1, float V2, float tension){ //V1 tension pour 400ppm V2 tension pour 800ppm (salle de cours) et tension la tension du capteur
+  float a= (V2-V1)/(800-400); //coeff directeur en V/ppm;
+  return  tension/a;
+
+
+
+
+}
+
+
