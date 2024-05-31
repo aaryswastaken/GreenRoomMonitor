@@ -1,13 +1,7 @@
-import json
+
 import pandas as pd
-import numpy as np
-from statsmodels.tsa import tsatools
-import statsmodels.formula.api as smf
-from statsmodels.tsa import tsatools
-import statsmodels.tsa.seasonal as sts
 import seaborn as sns
 import matplotlib.pyplot as plt
-from statsmodels.tsa.stattools import adfuller
 from BD import BD
 
 
@@ -49,58 +43,30 @@ def renvoie_dataframe(typecapteur):
     retour=creer_dataframe(colonne1,colonne2,colonne3,colonne4,colonne5)
     return retour
 
-def description_donnees(donnees):
-    for type,dataframes in donnees.items():
-        print(f'{type} a les statistiques suivantes \n {dataframes.describe()}')
-def boxplots_donnees(donnees):
-    for type,dataframes in donnees.items():
-        print(f"boite à moustaches du dataframe de {type}")
-        dataframes.boxplot(column=['moyenne','maximum','minimum'])
-        plt.title(f'boxplot de {type}')
-        plt.show()
-def tracer_stationnarite(donnees):
-    for type,dataframe in donnees.items():
-        if type!="CO2": #le CO2 est constant et ça fait crash
-            print(f"series temporelles de {type}")
-            liste_données=["moyenne","minimum","maximum"]
-            for i in liste_données:
-                test_stationarity(dataframe,i)
 
-def tracer_series(donnees):
-    for type,dataframe in donnees.items():
-
-        print(f"series temporelles de {type}")
-        liste_données=["moyenne","minimum","maximum"]
-        for i in liste_données:
-            plt.plot(dataframe[i])
-            plt.title(f"serie temporelle {i} de {type}")
-            plt.show()
-
-
-def test_stationarity(timeseries,i):
-    """test la stationnarité d'une série"""
-    #Determing rolling statistics
-    rolmean = timeseries.rolling(window=12).mean()
-    rolstd = timeseries.rolling(window=12).std()
-
-    #Plot rolling statistics:
-    orig = plt.plot(timeseries, color="blue", label="Original")
-    mean = plt.plot(rolmean, color='red', label='Rolling Mean')
-    std = plt.plot(rolstd, color='black', label = 'Rolling Std')
-    plt.legend(loc='best')
-    plt.title('Rolling Mean & Standard Deviation')
+def creer_graph_cor_CO2_Temp(lis_timeseries):
+    corelation_temp_CO2 = pd.concat(lis_timeseries, axis=1)
+    sns.lmplot(x="Temperature", y="CO2", data=corelation_temp_CO2);
+    plt.show()
+def creer_matrice_cor(lis_timeseries):
+    corelation_gaz = pd.concat(lis_timeseries, axis=1)
+    cormat = corelation_gaz.corr()
+    sns.heatmap(cormat)
     plt.show()
 
-    #Perform Dickey-Fuller test:
-    print ('Results of Dickey-Fuller Test:')
-    print(timeseries[i])
-    dftest = adfuller(timeseries[i], autolag='AIC')
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used'])
-    for key,value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
-    print (dfoutput)
+def detect_outliers(timeseries):
+    mediane = timeseries.mean()
+    deviation_standard = timeseries.std()
+    z_scores = (timeseries - mediane) / deviation_standard
+    outliers = timeseries[z_scores**2 > 4]
+    return outliers.dropna()
 
-
+def creer_graph_outliers(timeseries,var):
+    plt.scatter(timeseries.index, timeseries[[var]],label='Valeur cohérente (z²<4)')
+    plt.scatter(detect_outliers(timeseries).index,detect_outliers(timeseries)[[var]],c="#CF2093",label='Valeur incohérente (z²>4)')
+    plt.legend()
+    plt.title(f"serie temporelle de {var}")
+    plt.show()
 instance_prod = BD()
 instance_prod.connexion_bd()
 temperatures=instance_prod.get_Mesure_Type("Temperature")
@@ -121,5 +87,15 @@ temperature_test.rename(columns={"moyenne": "Temperature"})
 temperature_test=temperature_test.rename(columns={"moyenne": "Temperature"})
 co2_test=renvoie_dataframe(instance_prod.mesures_d_une_arduino_par_type("eui-a8610a3231278105","Gaz:CO2"))[['moyenne']]
 co2_test=co2_test.rename(columns={"moyenne": "CO2"})
-out = pd.concat([temperature_test, co2_test], axis=1)
-print(out)
+no2_test=renvoie_dataframe(instance_prod.mesures_d_une_arduino_par_type("eui-a8610a3231278105","Gaz:NO2"))[['moyenne']]
+no2_test=no2_test.rename(columns={"moyenne": "NO2"})
+ethanol_test=renvoie_dataframe(instance_prod.mesures_d_une_arduino_par_type("eui-a8610a3231278105","Gaz:ethanol"))[['moyenne']]
+ethanol_test=ethanol_test.rename(columns={"moyenne": "Ethanol"})
+Cov_test=renvoie_dataframe(instance_prod.mesures_d_une_arduino_par_type("eui-a8610a3231278105","Gaz:COV"))[['moyenne']]
+Cov_test=Cov_test.rename(columns={"moyenne": "COV"})
+Co_test=renvoie_dataframe(instance_prod.mesures_d_une_arduino_par_type("eui-a8610a3231278105","Gaz:CO"))[['moyenne']]
+Co_test=Co_test.rename(columns={"moyenne": "CO"})
+
+creer_graph_cor_CO2_Temp([temperature_test, co2_test])
+creer_matrice_cor([co2_test, no2_test, ethanol_test, Cov_test, Co_test])
+creer_graph_outliers(temperature_test,"Temperature")

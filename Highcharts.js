@@ -73,38 +73,4 @@ document.addEventListener('DOMContentLoaded', function() {
             decimalPoint: ','
         }
     });
-
-    buildLineChart('container-1', TEMP_TIME_SERIES.batiment1.piece1.capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1.piece1.loc);
-    buildLineChart('container-2', NOISE_TIME_SERIES.batiment1.piece1.capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES.batiment1.piece1.loc);
-    buildMultiLineChart('container-3', GAZ_TIME_SERIES.batiment1.piece1.capteur1.donnees, GAZ_TIME_SERIES.batiment1.piece1.loc);
-
-    document.getElementById('Piece1').addEventListener('click', function() {
-        document.getElementById('container-1').innerHTML = '';
-        document.getElementById('container-2').innerHTML = '';
-        document.getElementById('container-3').innerHTML = '';
-
-        buildLineChart('container-1', TEMP_TIME_SERIES.batiment1.piece1.capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1.piece1.loc);
-        buildLineChart('container-2', NOISE_TIME_SERIES.batiment1.piece1.capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES.batiment1.piece1.loc);
-        buildMultiLineChart('container-3', GAZ_TIME_SERIES.batiment1.piece1.capteur1.donnees, GAZ_TIME_SERIES.batiment1.piece1.loc);
-    });
-
-    document.getElementById('Couloir').addEventListener('click', function() {
-        document.getElementById('container-1').innerHTML = '';
-        buildLineChart('container-1', TEMP_TIME_SERIES.batiment1.couloir.capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1.couloir.loc);
-    });
-
-    document.getElementById('Exterieur').addEventListener('click', function() {
-        document.getElementById('container-1').innerHTML = '';
-        buildLineChart('container-1', TEMP_TIME_SERIES.exterieur.capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.exterieur.loc);
-    });
-
-    document.getElementById('Piece2').addEventListener('click', function() {
-        document.getElementById('container-1').innerHTML = '';
-        document.getElementById('container-2').innerHTML = '';
-        document.getElementById('container-3').innerHTML = '';
-
-        buildLineChart('container-1', TEMP_TIME_SERIES.batiment1.piece2.capteur1.donnees, 'Température', 'Température (°C)', TEMP_TIME_SERIES.batiment1.piece2.loc);
-        buildLineChart('container-2', NOISE_TIME_SERIES.batiment1.piece2.capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', NOISE_TIME_SERIES.batiment1.piece2.loc);
-        buildMultiLineChart('container-3', GAZ_TIME_SERIES.batiment1.piece2.capteur1.donnees, GAZ_TIME_SERIES.batiment1.piece2.loc);
-    });
 });

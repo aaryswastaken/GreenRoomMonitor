@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2i-2 - 221B - Greenroom Monitor</title>
+    <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/geoheatmap.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="./Highcharts.js"></script>
+    <script src="./Temperature.js"></script>
+    <script src="./Gaz.js"></script>
+    <script src="./loc.js"></script>
+    <script src="./Son.js"></script>
+    <style>
+      .modal {
+        position: absolute;
+	
+        z-index: 200;
+        background-color: rgba(0, 0, 0, 0.2);
+
+        width: 100%;
+        height: 100%;
+        
+	display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal > div {
+      }
+
+      .blurred {
+        filter: blur(5px);
+      }
+
+      #modal2 {
+	margin-left: 15px;
+      }
+
+      #modal3 {
+	margin-left: 15px;
+      }
+
+      .aligned {
+	display: flex;
+	justify-content: center;
+      }
+    </style>
+</head>
+<body>
+  <script>
+    function flatten(ds, id) {
+      let output = [];
+
+      console.log({ds})
+
+      Object.entries(ds).forEach((loc) => {
+	// get to the localisation
+	let k = loc[0];
+	let v = loc[1];
+
+	console.log({k, v})
+	Object.entries(v).forEach((capteur) => {
+	  // Get to the data
+	  let k2 = capteur[0];
+	  let v2 = capteur[1];
+	  
+	  if (k2 != "loc") {
+	    console.log({k2, v2});
+
+	    let temp = v2.donnees[id].data;
+
+	    output.push({id: k2, value: temp[temp.length - 1][1]})
+	  }
+
+	})
+      })
+
+      return output
+    }
+
+    function flattenLoc(ds) {
+      let out = {};
+
+      Object.entries(ds).forEach(([locId, loc]) => {
+	Object.entries(loc).forEach(([roomId, room]) => {
+	  room.forEach((capteur) => {
+	    out[capteur.id] = capteur;
+	  })
+	})
+      })
+
+      return out
+    }
+
+    let flat_loc = flattenLoc(DIC_LOC);
+
+    function ammendDS(ds, loc) {
+      return ds.map(capteur => {
+	return {id: capteur.id, value: capteur.value, x: loc[capteur.id].x, y: loc[capteur.id].y}
+      })
+    }
+
+    let chart
+
+    function validateModal() {
+      let ola = document.getElementById("room");
+      let local = ola.value;
+
+      console.log({local});
+
+      document.getElementById('container-1').innerHTML = '';
+
+      let capteurs = [];
+
+      Object.keys(DIC_LOC[local]).forEach(piece => {
+	DIC_LOC[local][piece].forEach(capteur => {
+	  capteurs.push(capteur);
+	})
+      });
+
+      let dataset = [];
+      let datatype = document.getElementById("metric").value;
+
+      console.log({datatype, capteurs});
+      
+      document.getElementById("modal").outerHTML = "";
+      document.getElementById("main").classList = [];
+
+      if (datatype == "temp") {
+	dataset = flatten(Temperature_TIME_SERIES[local], 0);
+      }
+
+      dataset = ammendDS(dataset, flat_loc)
+
+      console.log({dataset})
+
+      Object.entries(dataset).forEach(([id, value]) => {
+	console.log(id)
+      })
+
+      chart = Highcharts.mapChart('container-1', {
+	chart: {
+	  map: null,
+	  backgroundColor: "#fff"
+	},
+
+	title: {
+	  text: `Données de ${local}`
+	},
+
+	mapNavigation: {
+            enabled: true,
+            buttonOptions: {
+                verticalAlign: 'bottom'
+            }
+        },
+
+        mapView: {
+            fitToGeometry: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [-45, 0],
+                        [45, 0],
+                        [90, 0],
+                        [-90, 0]
+                    ]
+                ]
+            }
+        },
+
+	colorAxis: {
+	  min: 0,
+	  max: 100,
+	  stops: [
+	    [0.1, 'rgba(26,152,800,0.9)'],
+	    [0.2, 'rgba(140,206,103, 0.9)'],
+	    [0.4, 'rgba(224,242,149, 0.9)'],
+	    [0.6, 'rgba(254,229,147,0.9)'],
+	    [0.8, 'rgba(249,148,85,0.9'],
+	    [1, 'rgba(215,48,39,0.9)']
+	  ],
+	},
+
+	series: [{
+	  name: "Données",
+	  type: "geoheatmap",
+	  data: dataset.map(c => { return {lat: c.x, lon: c.y, value: c.value}}),
+	  interpolation: {
+	    enabled: true
+          }
+	}]
+      });
+    }
+
+    let modal_save = "";
+
+    function goback() {
+      // This function's working principle is absolute trash and I know it 
+      // but it works and we just need something to work :D
+
+      document.body.innerHTML = modal_save + document.body.innerHTML;
+      document.getElementById("main").classList = ["blurred"];
+      
+      let room = document.getElementById("room");
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+      let room = document.getElementById("room");
+      
+      console.log({DIC_LOC})
+
+      Object.keys(DIC_LOC).forEach(emplacement => {
+	console.log({emplacement})
+	room.innerHTML += `<option value=\"${emplacement}\">${emplacement}</option>`
+      });
+
+      modal_save = document.getElementById("modal").outerHTML;
+    })	
+      
+  </script>
+
+  <div class="modal" id="modal">
+    <div>
+      <div class="aligned"> 
+	<div> Choisir un batiment: </div>
+	<div id="modal2">
+	  <select id="room">
+	  </select>
+	</div>
+      </div>
+      <div class="aligned"> 
+	<div> Choisir une metrique: </div>
+	<div id="modal3">
+	  <select id="metric">
+	    <option value="temp"> Température </option>
+	  </select>
+	</div>
+      </div>
+      <button onclick="validateModal()"> Valider </button>
+    </div>
+  </div>
+
+
+  <div id="main" class="blurred">
+    <div id="goback" class="aligned">
+      <button class="click" onclick="goback()"> Retourner en arrière </button>
+    </div>
+  
+    <h1 style="text-align: center;">Graphique spacial des données</h1>
+    <div id="container-1" class="highcharts-container"></div>
+  </div>
+  <!-- <figure>
+      <button id='Piece1'>Piece1</button>
+      <button id='Couloir'>Couloir</button>
+      <button id='Exterieur'>Exterieur</button>
+      <button id='Piece2'>Piece2</button>
+  </figure> -->
+</body>
+</html>
+</html>
