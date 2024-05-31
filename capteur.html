@@ -106,7 +106,7 @@
 
       arduino.innerHTML = "";
       DIC_LOC[local][room].forEach(eui => {
-	arduino.innerHTML += `<option value=\"${eui}\"> ${eui} </option>`;
+	arduino.innerHTML += `<option value=\"${eui.id}\"> ${eui.id} </option>`;
       });
     }
 
