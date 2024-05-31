@@ -9,28 +9,42 @@
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="./Highcharts.js"></script>
     <script src="./Temperature.js"></script>
+    <script src="./Gaz.js"></script>
     <script src="./loc.js"></script>
     <script src="./Son.js"></script>
     <style>
       .modal {
         position: absolute;
+	
         z-index: 200;
         background-color: rgba(0, 0, 0, 0.2);
 
         width: 100%;
         height: 100%;
-
-        display: flex;
+        
+	display: flex;
         align-items: center;
         justify-content: center;
       }
 
       .modal > div {
-
       }
 
       .blurred {
         filter: blur(5px);
+      }
+
+      #modal2 {
+	margin-left: 15px;
+      }
+
+      #modal3 {
+	margin-left: 15px;
+      }
+
+      .aligned {
+	display: flex;
+	justify-content: center;
       }
     </style>
 </head>
@@ -40,44 +54,110 @@
       let ola = document.getElementById("room");
       let sel = ola.value;
 
-      let locale = sel.split("/")[0];
+      let id = document.getElementById("arduino").value;
+
+      let local = sel.split("/")[0];
       let room = sel.split("/")[1];
 
-      console.log(sel);
+      console.log({sel, local, room, id});
 
       document.getElementById('container-1').innerHTML = '';
       document.getElementById('container-2').innerHTML = '';
       document.getElementById('container-3').innerHTML = '';
 
-      buildLineChart('container-1', Temperature_TIME_SERIES[locale][room].capteur1.donnees, 'Température', 'Température (°C)', Temperature_TIME_SERIES[locale][room].loc);
-      buildLineChart('container-2', Son_TIME_SERIES[locale][room].capteur1.donnees, 'Niveau sonore', 'Niveau sonore (dB)', Son_TIME_SERIES[locale][room].loc);
-      buildMultiLineChart('container-3', GAZ_TIME_SERIES[locale][room].capteur1.donnees, GAZ_TIME_SERIES[locale][room].loc);
+      if (Object.keys(Temperature_TIME_SERIES).includes(local) && Object.keys(Temperature_TIME_SERIES[local]).includes(room)) {
+        buildLineChart('container-1', Temperature_TIME_SERIES[local][room][id].donnees, 'Température', 'Température (°C)', Temperature_TIME_SERIES[local][room].loc);
+      }
+
+      if (Object.keys(Son_TIME_SERIES).includes(local) && Object.keys(Son_TIME_SERIES[local]).includes(room)) {
+        buildLineChart('container-2', Son_TIME_SERIES[local][room][id].donnees, 'Niveau sonore', 'Niveau sonore (dB)', Son_TIME_SERIES[local][room].loc);
+      }
+
+      if (Object.keys(Gaz_TIME_SERIES).includes(local) && Object.keys(Gaz_TIME_SERIES[local]).includes(room)) {
+        buildMultiLineChart('container-3', Gaz_TIME_SERIES[local][room][id].donnees, Gaz_TIME_SERIES[local][room].loc);
+      }
 
       document.getElementById("modal").outerHTML = "";
       document.getElementById("main").classList = [];
     }
 
+    let modal_save = "";
+
+    function goback() {
+      // This function's working principle is absolute trash and I know it 
+      // but it works and we just need something to work :D
+
+      document.body.innerHTML = modal_save + document.body.innerHTML;
+      document.getElementById("main").classList = ["blurred"];
+      
+      let room = document.getElementById("room");
+      room.addEventListener("change", onRoomChange)
+    }
+
+    function onRoomChange (self) {
+      let ola = document.getElementById("room");
+      let arduino = document.getElementById("arduino");
+      let sel = ola.value;
+      
+      let local = sel.split("/")[0];
+      let room = sel.split("/")[1];
+
+      console.log({roomIdentifier: {local, room}, locale: DIC_LOC[local][room]});
+
+      arduino.innerHTML = "";
+      DIC_LOC[local][room].forEach(eui => {
+	arduino.innerHTML += `<option value=\"${eui}\"> ${eui} </option>`;
+      });
+    }
+
+
+
     document.addEventListener("DOMContentLoaded", function () {
       let room = document.getElementById("room");
       
+      console.log({DIC_LOC})
+
       Object.keys(DIC_LOC).forEach(emplacement => {
-	DIC_LOC[emplacement].forEach(piece => {
+	console.log({emplacement})
+	Object.keys(DIC_LOC[emplacement]).forEach(piece => {
 	  room.innerHTML += `<option value=\"${emplacement}/${piece}\">${emplacement} / ${piece}</option>`
 	})
-      })
+      });
+
+      onRoomChange(null)
+
+      room.addEventListener("change", onRoomChange)
+
+      modal_save = document.getElementById("modal").outerHTML;
     })	
       
   </script>
 
   <div class="modal" id="modal">
     <div>
-      <select id="room">
-      </select>
-      <button onclick="validateModal()"> Valider </button>
+      <div class="aligned"> 
+	<div> Choisir une salle: </div>
+	<div id="modal2">
+	  <select id="room">
+	  </select>
+	</div>
+      </div>
+      <div class="aligned">
+	<div> Choisir un arduino: </div>
+	<div id="modal3">
+	  <select id="arduino"> </select>
+	  <button onclick="validateModal()"> Valider </button>
+	</div>
+      </div>
     </div>
   </div>
 
+
   <div id="main" class="blurred">
+    <div id="goback" class="aligned">
+      <button class="click" onclick="goback()"> Retourner en arrière </button>
+    </div>
+  
     <h1 style="text-align: center;">Graphique sur Données Capteurs</h1>
     <div id="container-1" class="highcharts-container"></div>
     <div id="container-2" class="highcharts-container"></div>
