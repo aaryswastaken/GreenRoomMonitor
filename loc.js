@@ -1,18 +1,34 @@
 var DIC_LOC = {
    "Exterieur": {
       "null": [
-         "eui-a8610a3032357310"
+         {
+            "id": "eui-a8610a3032357310",
+            "x": 0,
+            "y": 1
+         }
       ]
    },
    "Usine": {
       "Salle_informatique": [
-         "eui-a8610a3035555555"
+         {
+            "id": "eui-a8610a3035555555",
+            "x": 5,
+            "y": 2
+         }
       ],
       "Piece_principale": [
-         "eui-a8610a3231278105"
+         {
+            "id": "eui-a8610a3231278105",
+            "x": 3,
+            "y": 3
+         }
       ],
       "Couloir": [
-         "eui-a8610a333937930f"
+         {
+            "id": "eui-a8610a333937930f",
+            "x": 4,
+            "y": 3
+         }
       ]
    }
 }

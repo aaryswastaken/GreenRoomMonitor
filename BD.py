@@ -110,7 +110,7 @@ class BD:
         """
         cursor = self.connexion_BD.cursor()
         cursor.execute(
-            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
+            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino, Localisation.x, Localisation.y FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
         return cursor.fetchall()
     def get_Piece_Inactive(self):
         """
@@ -119,6 +119,25 @@ class BD:
         cursor = self.connexion_BD.cursor()
         cursor.execute('SELECT DISTINCT Localisation.idLieu FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu  GROUP BY Localisation.idLieu HAVING SUM(Arduino.actif) = 0')
         return cursor.fetchall()
+
+
+    def mesures_d_une_arduino_par_type(self,idarduino,typecapteur):
+        """ 
+        renvoie la liste des mesures correspondant à une arduino
+        
+        """
+        cursor=self.connexion_BD.cursor()
+        cursor.execute("select m.valeur,m.maximum, m.minimum, m.datetemps,a.idLieu from Mesures m ,Capteur c,Arduino a,TypeCapteur tc  where c.idCapteur =m.idCapteur and a.idArduino =c.idArduino and tc.idType=c.idType and a.idArduino  =%s and tc.nom=%s",[idarduino,typecapteur])
+        return cursor.fetchall()
+    def mesures_d_une_arduino_par_type2(self,idarduino,typecapteur):
+        """ 
+        renvoie la liste des mesures correspondant à une arduino
+        
+        """
+        cursor=self.connexion_BD.cursor()
+        cursor.execute("select m.valeur,m.maximum, m.minimum, m.datetemps,a.idLieu from Mesures m ,Capteur c,Arduino a,TypeCapteur tc  where c.idCapteur =m.idCapteur and a.idArduino =c.idArduino and tc.idType=c.idType  and a.idArduino  =%s and tc.nom=%s and m.datetemps in(select datetemps from Mesures m, Capteur c,TypeCapteur tc where m.idCapteur=c.idCapteur and c.idType=tc.idType and tc.nom='Gaz:CO2')",[idarduino,typecapteur])
+        return cursor.fetchall()
+
     def mesure_to_js(self):
             cursor = self.connexion_BD.cursor()
             cursor.execute('SELECT DISTINCT idCapteur FROM Mesures')
@@ -197,12 +216,12 @@ class BD:
                 #######################
     def localisation_to_json(self):
         dico_piece={}
-        for batiment, piece, id in self.get_Piece_Actif():
+        for batiment, piece, id,x, y in self.get_Piece_Actif():
             if batiment not in dico_piece:
                 dico_piece[batiment]={}
             if piece not in dico_piece[batiment]:
                 dico_piece[batiment][piece]=[]
-            dico_piece[batiment][piece].append(id)
+            dico_piece[batiment][piece].append({"id":id,"x":x,"y":y})
         out_file = open(f"loc.js", "w")
         out_file.write(f"var DIC_LOC = ")
         json.dump(dico_piece, out_file, indent=3)
