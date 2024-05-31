@@ -86,6 +86,13 @@ class BD:
         cursor.execute('SELECT valeur,maximum, minimum, datetemps,TypeCapteur.nom FROM Capteur,Arduino,Localisation,TypeCapteur,Mesures where Mesures.idCapteur=Capteur.idCapteur and TypeCapteur.idType=Capteur.idType and Capteur.idArduino=Arduino.idArduino and Arduino.idLieu=Localisation.idLieu and Localisation.piece=%s and Localisation.batiment=%s',[piece,batiment])
         return cursor.fetchall()
 
+    def get_Arduino_Piece(self,batiment,piece):
+        cursor = self.connexion_BD.cursor()
+        cursor.execute(
+            'SELECT Arduino.idArduino FROM Capteur,Arduino,Localisation where Capteur.idArduino=Arduino.idArduino and Arduino.idLieu=Localisation.idLieu and Localisation.piece=%s and Localisation.batiment=%s',
+            [piece, batiment])
+        return cursor.fetchall()
+
     def get_Mesure_Type(self,NomtypeCapteur):
         """
                          Méthode qui permet de renvoyer toute les mesures faites par un type de capteur
@@ -103,7 +110,7 @@ class BD:
         """
         cursor = self.connexion_BD.cursor()
         cursor.execute(
-            'SELECT DISTINCT Localisation.batiment,Localisation.piece FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
+            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
         return cursor.fetchall()
     def get_Piece_Inactive(self):
         """
@@ -190,10 +197,12 @@ class BD:
                 #######################
     def localisation_to_json(self):
         dico_piece={}
-        for batiment, piece in self.get_Piece_Actif():
+        for batiment, piece, id in self.get_Piece_Actif():
             if batiment not in dico_piece:
-                dico_piece[batiment]=[]
-            dico_piece[batiment].append(piece)
+                dico_piece[batiment]={}
+            if piece not in dico_piece[batiment]:
+                dico_piece[batiment][piece]=[]
+            dico_piece[batiment][piece].append(id)
         out_file = open(f"loc.js", "w")
         out_file.write(f"var DIC_LOC = ")
         json.dump(dico_piece, out_file, indent=3)
@@ -212,6 +221,7 @@ if __name__ == "__main__":
     print(instance_prod.get_Piece_Actif())
     print(instance_prod.get_Piece_Inactive())
     print(instance_prod.localisation_to_json())
+    print(instance_prod.get_Arduino_Piece("Usine","Salle informatique"))
 # lancer la boucle infinie de production de données
 #instance_prod.produire_mesures()
 
