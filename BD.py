@@ -47,7 +47,7 @@ class BD:
         """
          Méthode qui permet de renvoyer toute les mesures faites par un capteur
 
-        :uint idCapteur: L'id du capteur qui a effectué la mesure
+        :uint idCapteur: L'id du capteur qui a effectuer la mesure
         :return: Renvoye une liste contenenant des tuples (valeur,maximum,minimum,datetemps)
         """
         cursor = self.connexion_BD.cursor()
@@ -86,9 +86,16 @@ class BD:
         cursor.execute('SELECT valeur,maximum, minimum, datetemps,TypeCapteur.nom FROM Capteur,Arduino,Localisation,TypeCapteur,Mesures where Mesures.idCapteur=Capteur.idCapteur and TypeCapteur.idType=Capteur.idType and Capteur.idArduino=Arduino.idArduino and Arduino.idLieu=Localisation.idLieu and Localisation.piece=%s and Localisation.batiment=%s',[piece,batiment])
         return cursor.fetchall()
 
+    def get_Arduino_Piece(self,batiment,piece):
+        cursor = self.connexion_BD.cursor()
+        cursor.execute(
+            'SELECT Arduino.idArduino FROM Capteur,Arduino,Localisation where Capteur.idArduino=Arduino.idArduino and Arduino.idLieu=Localisation.idLieu and Localisation.piece=%s and Localisation.batiment=%s',
+            [piece, batiment])
+        return cursor.fetchall()
+
     def get_Mesure_Type(self,NomtypeCapteur):
         """
-                         Méthode qui permet de renvoyer toutes les mesures faites par un type de capteur
+                         Méthode qui permet de renvoyer toute les mesures faites par un type de capteur
 
                         :str NomtypeCapteur, le nom du type de capteur
                         :return: Renvoye une liste contenenant des tuples (valeur,maximum,minimum,datetemps,idLocalisation)
@@ -103,7 +110,7 @@ class BD:
         """
         cursor = self.connexion_BD.cursor()
         cursor.execute(
-            'SELECT DISTINCT Localisation.idLieu FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
+            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino, Localisation.x, Localisation.y FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
         return cursor.fetchall()
     def get_Piece_Inactive(self):
         """
@@ -112,6 +119,25 @@ class BD:
         cursor = self.connexion_BD.cursor()
         cursor.execute('SELECT DISTINCT Localisation.idLieu FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu  GROUP BY Localisation.idLieu HAVING SUM(Arduino.actif) = 0')
         return cursor.fetchall()
+
+
+    def mesures_d_une_arduino_par_type(self,idarduino,typecapteur):
+        """ 
+        renvoie la liste des mesures correspondant à une arduino
+        
+        """
+        cursor=self.connexion_BD.cursor()
+        cursor.execute("select m.valeur,m.maximum, m.minimum, m.datetemps,a.idLieu from Mesures m ,Capteur c,Arduino a,TypeCapteur tc  where c.idCapteur =m.idCapteur and a.idArduino =c.idArduino and tc.idType=c.idType and a.idArduino  =%s and tc.nom=%s",[idarduino,typecapteur])
+        return cursor.fetchall()
+    def mesures_d_une_arduino_par_type2(self,idarduino,typecapteur):
+        """ 
+        renvoie la liste des mesures correspondant à une arduino
+        
+        """
+        cursor=self.connexion_BD.cursor()
+        cursor.execute("select m.valeur,m.maximum, m.minimum, m.datetemps,a.idLieu from Mesures m ,Capteur c,Arduino a,TypeCapteur tc  where c.idCapteur =m.idCapteur and a.idArduino =c.idArduino and tc.idType=c.idType  and a.idArduino  =%s and tc.nom=%s and m.datetemps in(select datetemps from Mesures m, Capteur c,TypeCapteur tc where m.idCapteur=c.idCapteur and c.idType=tc.idType and tc.nom='Gaz:CO2')",[idarduino,typecapteur])
+        return cursor.fetchall()
+
     def mesure_to_js(self):
             cursor = self.connexion_BD.cursor()
             cursor.execute('SELECT DISTINCT idCapteur FROM Mesures')
@@ -176,7 +202,7 @@ class BD:
             for i in dico_totale:
                 out_file = open(f"{i}.js", "w")
                 out_file.write(f"var {i}_TIME_SERIES = ")
-                json.dump(dico_totale[i], out_file, indent=6)
+                json.dump(dico_totale[i], out_file, indent=3)
                 out_file.close()
 
 
@@ -188,6 +214,19 @@ class BD:
 
 
                 #######################
+    def localisation_to_json(self):
+        dico_piece={}
+        for batiment, piece, id,x, y in self.get_Piece_Actif():
+            if batiment not in dico_piece:
+                dico_piece[batiment]={}
+            if piece not in dico_piece[batiment]:
+                dico_piece[batiment][piece]=[]
+            dico_piece[batiment][piece].append({"id":id,"x":x,"y":y})
+        out_file = open(f"loc.js", "w")
+        out_file.write(f"var DIC_LOC = ")
+        json.dump(dico_piece, out_file, indent=3)
+        out_file.close()
+
 # Programme principal #
 #######################
 if __name__ == "__main__":
@@ -200,7 +239,8 @@ if __name__ == "__main__":
     print(instance_prod.get_Mesure_Type("Temperature"))
     print(instance_prod.get_Piece_Actif())
     print(instance_prod.get_Piece_Inactive())
-
+    print(instance_prod.localisation_to_json())
+    print(instance_prod.get_Arduino_Piece("Usine","Salle informatique"))
 # lancer la boucle infinie de production de données
 #instance_prod.produire_mesures()
 
