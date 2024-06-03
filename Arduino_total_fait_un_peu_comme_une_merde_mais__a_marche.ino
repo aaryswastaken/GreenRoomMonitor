@@ -40,7 +40,6 @@ float cCOV;
 
 //capteurs
 #define         MG_PIN                       (A2)     //define which analog input channel you are going to use
-#define         BOOL_PIN                     (2)
 #define         DC_GAIN                      (8.5)   //define the DC gain of amplifier
 
 /***********************Software Related Macros************************************/
@@ -89,8 +88,7 @@ void setup() {
     //partie capteur
     Serial.begin(9600);
     gas.begin(Wire, 0x08); // use the hardware I2C
-    pinMode(BOOL_PIN, INPUT);                        //set pin to input
-    digitalWrite(BOOL_PIN, HIGH);                    //turn on pullup resistors
+
     //moyennes
     cCO2=0;
     cNO2=0;
@@ -169,13 +167,6 @@ void loop() {
 
     Serial.print( "ppm" );
     Serial.print("\n");
-
-    if (digitalRead(BOOL_PIN) ){
-	Serial.print( "=====BOOL is HIGH======" );
-    } else {
-	Serial.print( "=====BOOL is LOW======" );
-    }
-
 
     // boucle son + délai
     for (int i=0; i<10; i=i+1) { 
