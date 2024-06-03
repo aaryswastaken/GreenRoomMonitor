@@ -55,15 +55,15 @@ void setup() {
  
 void loop() {
     //main code Thermistance :
-    VoutT = (analogRead(entreeT)/1023.0)*3.3;
+    VoutT = (analogRead(entreeT) / 1023.0)*3.3;
 
+    //envoi des données
+    ma_trame.temperature = int(10 * (VoutT * 13.2 - 2.25));
 
-    //envoie des données
-
-    ma_trame.temperature= int(10*(VoutT*13.2-2.25))  ;
     modem.beginPacket();
-    modem.write( (byte* )& ma_trame, sizeof(ma_trame) ) ;
+    modem.write((byte*) &ma_trame, sizeof(ma_trame)) ;
     int err = modem.endPacket();
+    
     if (err > 0) {
         Serial.println("Message envoyé correctement");
     } else {
@@ -74,5 +74,3 @@ void loop() {
 
     delay(60000);
 }
-
-

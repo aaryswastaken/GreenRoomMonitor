@@ -35,8 +35,8 @@ float cCO;
 float cCOV;
 
 //réseau
-#define SECRET_APP_EUI "221B221B221B221B"
-#define SECRET_APP_KEY "E5C5ED0C6854B76E2D8BC9140D1C53B0"
+#define SECRET_APP_EUI ""
+#define SECRET_APP_KEY ""
 
 //capteurs
 #define         MG_PIN                       (A2)     //define which analog input channel you are going to use
@@ -109,26 +109,29 @@ void loop() {
     if (valNO2 > 999) 
 	valNO2 = 999.0;
     
-    cNO2 = cNO2+ float(float(valNO2)/float(60.0));
+    cNO2 = cNO2 + float(valNO2) / 60.0;
   
     // GM302B C2H5CH sensor
     float valC2H5CH = gas.getGM302B();
 
     if (valC2H5CH > 999)
 	valC2H5CH = 999.0;
-    cC2H5OH = cC2H5OH + float(float(valC2H5CH)/float(60.0));
+
+    cC2H5OH = cC2H5OH + float(valC2H5CH) / 60.0;
 
     // GM502B VOC sensor
     float valVOC = gas.getGM502B();
     if (valVOC > 999) 
 	valVOC = 999.0;
-    cCOV = cCOV + float(float(valVOC)/float(60.0));
+
+    cCOV = cCOV + float(valVOC) / 60.0;
 
     // GM702B CO sensor
     float valCO = gas.getGM702B();
     if (valCO > 999)
 	valCO = 999.0;
-    cCO = cCO + float(float(valCO)/float(60.0));
+
+    cCO = cCO + float(valCO) / 60.0;
 
     // Print the readings to the console
     Serial.print("NO2: ");
@@ -148,7 +151,7 @@ void loop() {
     Serial.println("ppm");
 
     //main code Thermistance :
-    VoutT = (analogRead(entreeT)/1023.0)*3.3;
+    VoutT = (analogRead(entreeT) / 1023.0) * 3.3;
 
     // main code CO2
     float percentage;
@@ -159,10 +162,10 @@ void loop() {
     Serial.print("CO2: ");
     if (percentage == -1) {
 	Serial.print( "<400" );
-	cCO2 = cCO2 + float(float(399.0)/float(60.0));
+	cCO2 = cCO2 + 399.0 / 60.0;
     } else {
 	Serial.print(percentage);
-	cCO2 = cCO2 + float(float(percentage)/float(60.0));
+	cCO2 = cCO2 + float(percentage) / 60.0;
     }
 
     Serial.print( "ppm" );
@@ -170,7 +173,7 @@ void loop() {
 
     // boucle son + délai
     for (int i=0; i<10; i=i+1) { 
-	mdb = mdb + float(1/600) * float(75+(20*log((3.3*analogRead(analogPin)/1023)/0.50)));
+	mdb = mdb + (75 + (20 * log((3.3 * analogRead(analogPin) / 1023.0) / 0.50))) / 600.0;
 	delay(100);
     }
 
@@ -183,10 +186,10 @@ void loop() {
 	ma_trame.COV=uint16_t(cCOV);
 	ma_trame.CO=uint16_t(cCO);
 	ma_trame.CO2=uint16_t(cCO2);
-	ma_trame.temperature= uint16_t(10*(VoutT*13.2-2.25))  ;
+	ma_trame.temperature= uint16_t(10 * (VoutT * 13.2 - 2.25))  ;
 	ma_trame.son=uint16_t(mdb);
 	modem.beginPacket();
-	modem.write( (byte* )& ma_trame, sizeof(ma_trame) ) ;
+	modem.write((byte*) &ma_trame, sizeof(ma_trame)) ;
 	compteur=1;
 	cCO2=0;
 	cNO2=0;
@@ -195,6 +198,7 @@ void loop() {
 	cCO=0;
 	mdb=0;
 	int err = modem.endPacket();
+
 	if (err > 0) {
 	    Serial.println("Message envoyé correctement");
 	} else {
@@ -215,7 +219,8 @@ float MGRead(int mg_pin)
 	v += analogRead(mg_pin);
 	delay(READ_SAMPLE_INTERVAL);
     }
-    v = (v/READ_SAMPLE_TIMES) *5/1024 ;
+
+    v = (v / READ_SAMPLE_TIMES) * 5.0 / 1024.0 ;
     return v;
 }
 
@@ -230,9 +235,9 @@ Remarks: By using the slope and a point of the line. The x(logarithmic value of 
 ************************************************************************************/
 int MGGetPercentage(float volts, float *pcurve)
 {
-    if ((volts/DC_GAIN )>=ZERO_POINT_VOLTAGE) {
+    if ((volts / DC_GAIN) >= ZERO_POINT_VOLTAGE) {
 	return -1;
     } else {
-	return pow(10, ((volts/DC_GAIN)-pcurve[1])/pcurve[2]+pcurve[0]);
+	return pow(10, ((volts / DC_GAIN) - pcurve[1]) / pcurve[2] + pcurve[0]);
     }
 }
