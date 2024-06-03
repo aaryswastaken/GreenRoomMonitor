@@ -8,9 +8,7 @@ from BD import BD
 from datetime import datetime
 
 
-#fonction pour garder les 3 dernières valeurs d'une liste, connaissant la clé du dictionnaire:
-def garder(dictionnaire,device_id):
-    return dictionnaire[device_id][len(dictionnaire[device_id])-2:]
+
     
 
 
@@ -159,6 +157,7 @@ while True:
         #données simplifiées de la forme {device_id:{temp   :{moyenne,minimum,maximum}, CO2: .......}}
         for dev_id in données_simplifiees.keys():
             idarduino=dev_id
+            date=datetime.now()
             print("données simplifiées",données_simplifiees)
             for type,valeurs in données_simplifiees[dev_id].items(): #on met en forme les données avec les bonnes clés pour insérer sur la BD
                 print("on rentre dans la boucle type valeur")
@@ -177,7 +176,7 @@ while True:
                 else:
                     typedecapteur="Gaz:"+type
                     valeur,minimum,maximum=valeurs.values()
-                date=datetime.now()
+                
                 datetemps=date #on récupère et on met en forme la date pour insertion dans la BD
                 print("upload des valeurs sur la BD")
                 time.sleep(2)
@@ -198,4 +197,5 @@ while True:
     # ttn.mqtt_register_device("node16")
     # ttn.mqtt_register_device("node8")
     
+
 
