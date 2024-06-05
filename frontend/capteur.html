@@ -65,15 +65,15 @@
       document.getElementById('container-2').innerHTML = '';
       document.getElementById('container-3').innerHTML = '';
 
-      if (Object.keys(Temperature_TIME_SERIES).includes(local) && Object.keys(Temperature_TIME_SERIES[local]).includes(room)) {
+      if (Object.keys(Temperature_TIME_SERIES).includes(local) && Object.keys(Temperature_TIME_SERIES[local]).includes(room) && Object.keys(Temperature_TIME_SERIES[local][room]).includes(id)){
         buildLineChart('container-1', Temperature_TIME_SERIES[local][room][id].donnees, 'Température', 'Température (°C)', Temperature_TIME_SERIES[local][room].loc);
       }
 
-      if (Object.keys(Son_TIME_SERIES).includes(local) && Object.keys(Son_TIME_SERIES[local]).includes(room)) {
+      if (Object.keys(Son_TIME_SERIES).includes(local) && Object.keys(Son_TIME_SERIES[local]).includes(room) && Object.keys(Son_TIME_SERIES[local][room]).includes(id) ) {
         buildLineChart('container-2', Son_TIME_SERIES[local][room][id].donnees, 'Niveau sonore', 'Niveau sonore (dB)', Son_TIME_SERIES[local][room].loc);
       }
 
-      if (Object.keys(Gaz_TIME_SERIES).includes(local) && Object.keys(Gaz_TIME_SERIES[local]).includes(room)) {
+      if (Object.keys(Gaz_TIME_SERIES).includes(local) && Object.keys(Gaz_TIME_SERIES[local]).includes(room) && Object.keys(Gaz_TIME_SERIES[local][room]).includes(id) ) {
         buildMultiLineChart('container-3', Gaz_TIME_SERIES[local][room][id].donnees, Gaz_TIME_SERIES[local][room].loc);
       }
 

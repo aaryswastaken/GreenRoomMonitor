@@ -104,13 +104,13 @@ class BD:
         cursor.execute(
                 'SELECT valeur,maximum, minimum, datetemps,Localisation.idLieu FROM Capteur,Arduino,Localisation,TypeCapteur,Mesures where Mesures.idCapteur=Capteur.idCapteur and TypeCapteur.idType=Capteur.idType and Capteur.idArduino=Arduino.idArduino and Arduino.idLieu=Localisation.idLieu and TypeCapteur.nom=%s ',[NomtypeCapteur])
         return cursor.fetchall()
-    def get_Piece_Actif(self):
+    def get_donnee_loc(self):
         """
         Renvoie la liste des pieces qui contiennent au moins un capteur actif
         """
         cursor = self.connexion_BD.cursor()
         cursor.execute(
-            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino, Localisation.x, Localisation.y FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu and Arduino.actif = 1')
+            'SELECT DISTINCT Localisation.batiment,Localisation.piece, Arduino.idArduino, Localisation.x, Localisation.y FROM Arduino,Localisation where Arduino.idLieu=Localisation.idLieu')
         return cursor.fetchall()
     def get_Piece_Inactive(self):
         """
@@ -216,7 +216,7 @@ class BD:
                 #######################
     def localisation_to_json(self):
         dico_piece={}
-        for batiment, piece, id,x, y in self.get_Piece_Actif():
+        for batiment, piece, id,x, y in self.get_donnee_loc():
             if batiment not in dico_piece:
                 dico_piece[batiment]={}
             if piece not in dico_piece[batiment]:
@@ -237,7 +237,6 @@ if __name__ == "__main__":
     print(instance_prod.get_Capteur_Actif())
     print(instance_prod.get_Mesure_Piece("Usine","Salle informatique"))
     print(instance_prod.get_Mesure_Type("Temperature"))
-    print(instance_prod.get_Piece_Actif())
     print(instance_prod.get_Piece_Inactive())
     print(instance_prod.localisation_to_json())
     print(instance_prod.get_Arduino_Piece("Usine","Salle informatique"))

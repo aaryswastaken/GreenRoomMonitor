@@ -99,6 +99,7 @@
 
     function ammendDS(ds, loc) {
       return ds.map(capteur => {
+	console.log(capteur.id)
 	return {id: capteur.id, value: capteur.value, x: loc[capteur.id].x, y: loc[capteur.id].y}
       })
     }
@@ -106,6 +107,7 @@
     let chart
 
     function validateModal() {
+
       let ola = document.getElementById("room");
       let local = ola.value;
 
@@ -131,68 +133,75 @@
 
       if (datatype == "temp") {
 	dataset = flatten(Temperature_TIME_SERIES[local], 0);
+	// 
       }
 
+
       dataset = ammendDS(dataset, flat_loc)
-
       console.log({dataset})
-
       Object.entries(dataset).forEach(([id, value]) => {
 	console.log(id)
       })
 
-      chart = Highcharts.mapChart('container-1', {
+      chart = Highcharts.chart('container-1', {
 	chart: {
-	  map: null,
-	  backgroundColor: "#fff"
+	 // height: '100%',
+       	 type: 'heatmap',
 	},
 
 	title: {
 	  text: `Données de ${local}`
 	},
 
-	mapNavigation: {
-            enabled: true,
-            buttonOptions: {
-                verticalAlign: 'bottom'
-            }
+    yAxis: {
+        title: {
+            text: undefined
         },
-
-        mapView: {
-            fitToGeometry: {
-                type: 'Polygon',
-                coordinates: [
-                    [
-                        [-45, 0],
-                        [45, 0],
-                        [90, 0],
-                        [-90, 0]
-                    ]
-                ]
-            }
-        },
-
-	colorAxis: {
-	  min: 0,
-	  max: 100,
-	  stops: [
-	    [0.1, 'rgba(26,152,800,0.9)'],
-	    [0.2, 'rgba(140,206,103, 0.9)'],
-	    [0.4, 'rgba(224,242,149, 0.9)'],
-	    [0.6, 'rgba(254,229,147,0.9)'],
-	    [0.8, 'rgba(249,148,85,0.9'],
-	    [1, 'rgba(215,48,39,0.9)']
-	  ],
-	},
+        endOnTick: false,
+        visible: false,
+        minPadding: 0,
+        maxPadding: 0
+    },
+    xAxis: {
+        visible: false,
+        margin: 0,
+        minPadding: 0,
+        maxPadding: 0
+    },
+    tooltip: {
+        pointFormat: 'température dans la zone {point.value:.0f}'
+    },
+    legend: {
+        title: {
+            text: 'Température par zone'
+        }
+    },
+    colorAxis: {
+        stops: [
+            [0, 'rgba(61, 0, 255, 0.2)'],
+            [0.3, 'rgba(0, 255, 188, 0.3)'],
+            [0.6, 'rgba(194, 255, 0, 0.6)'],
+            [0.9, 'rgba(255, 0, 67, 0.9)']
+        ]
+    },
 
 	series: [{
 	  name: "Données",
-	  type: "geoheatmap",
-	  data: dataset.map(c => { return {lat: c.x, lon: c.y, value: c.value}}),
-	  interpolation: {
-	    enabled: true
-          }
-	}]
+	  data: dataset.map(c => { return {x: c.x*2, y: c.y*2, value: c.value}}),
+	  interpolation: true
+	}],
+responsive: {
+        rules: [{
+            condition: {
+                minWidth: 600
+            },
+            chartOptions: {
+                chart: {
+                    height: 550
+                }
+            }
+        }]
+    }
       });
     }
 
