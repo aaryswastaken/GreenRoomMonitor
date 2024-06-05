@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P2i-2 - 221B - Greenroom Monitor</title>
     <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
-    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
-    <script src="https://code.highcharts.com/maps/modules/geoheatmap.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="./Highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
     <script src="./Temperature.js"></script>
     <script src="./Gaz.js"></script>
     <script src="./loc.js"></script>
@@ -124,6 +122,7 @@
       });
 
       let dataset = [];
+      let label = "";
       let datatype = document.getElementById("metric").value;
 
       console.log({datatype, capteurs});
@@ -133,7 +132,7 @@
 
       if (datatype == "temp") {
 	dataset = flatten(Temperature_TIME_SERIES[local], 0);
-	// 
+	label = "Température"
       }
 
 
@@ -143,66 +142,30 @@
 	console.log(id)
       })
 
-      chart = Highcharts.chart('container-1', {
-	chart: {
-	 // height: '100%',
-       	 type: 'heatmap',
-	},
+      const ds = dataset.map(c => { return {x: c.x, y: c.y, value: c.value}});
 
-	title: {
-	  text: `Données de ${local}`
-	},
+      let x_max = 0;
+      let y_max = 0;
 
-    yAxis: {
-        title: {
-            text: undefined
-        },
-        endOnTick: false,
-        visible: false,
-        minPadding: 0,
-        maxPadding: 0
-    },
-    xAxis: {
-        visible: false,
-        margin: 0,
-        minPadding: 0,
-        maxPadding: 0
-    },
-    tooltip: {
-        pointFormat: 'température dans la zone {point.value:.0f}'
-    },
-    legend: {
-        title: {
-            text: 'Température par zone'
-        }
-    },
-    colorAxis: {
-        stops: [
-            [0, 'rgba(61, 0, 255, 0.2)'],
-            [0.3, 'rgba(0, 255, 188, 0.3)'],
-            [0.6, 'rgba(194, 255, 0, 0.6)'],
-            [0.9, 'rgba(255, 0, 67, 0.9)']
-        ]
-    },
+      ds.forEach(point => {
+	if (point.x > x_max)
+	  x_max = point.x
 
-	series: [{
-	  name: "Données",
-	  data: dataset.map(c => { return {x: c.x*2, y: c.y*2, value: c.value}}),
-	  interpolation: true
-	}],
-responsive: {
-        rules: [{
-            condition: {
-                minWidth: 600
-            },
-            chartOptions: {
-                chart: {
-                    height: 550
-                }
-            }
-        }]
-    }
-      });
+	if (point.y > y_max)
+	  y_max = point.y
+      })
+
+      const plot = Plot.plot({
+	color: {label, legend: true, scheme: "BuRd"},
+	x: {domain: [0, x_max + 2]},
+	y: {domain: [0, y_max + 2]},
+	marks: [
+	  Plot.raster(ds, {x: "x", y: "y", fill: "value", interpolate: "barycentric"}),
+	  Plot.dot(ds, {x: "x", y: "y", fill: "black", r: 4,})
+	]
+      })
+
+      document.getElementById("container-1").append(plot)
     }
 
     let modal_save = "";
