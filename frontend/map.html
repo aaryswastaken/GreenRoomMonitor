@@ -139,8 +139,6 @@
 
       dataset = ammendDS(dataset, flat_loc)
       console.log({dataset})
-      console.log(dataset.map(c => { return {x: c.x, y: c.y, value: c.value}}))
-
       Object.entries(dataset).forEach(([id, value]) => {
 	console.log(id)
       })
