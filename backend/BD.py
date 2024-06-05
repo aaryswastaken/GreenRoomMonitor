@@ -169,7 +169,7 @@ class BD:
                     dic=dic_bat[batiment][piece][arduino]["donnees"][-1]
                     dic["idcapteur"] = str(i[0])
                     cursor.execute('SELECT valeur,datetemps FROM Mesures where idCapteur=%s ', [i[0]])
-                    dic["data"] = [[datetime.timestamp(y[1]), y[0]] for y in cursor.fetchall()]
+                    dic["data"] = [[datetime.timestamp(y[1])*1000, y[0]] for y in cursor.fetchall()]
                 else:
                     if "Gaz" not in dico_totale:
                         dico_totale["Gaz"] = {}
@@ -198,7 +198,7 @@ class BD:
                     dic["idcapteur"] = str(i[0])
                     dic["name"] = typecapteur.split(":")[1]
                     cursor.execute('SELECT valeur,datetemps FROM Mesures where idCapteur=%s ', [i[0]])
-                    dic["data"] = [[datetime.timestamp(y[1]),y[0] ] for y in cursor.fetchall()]
+                    dic["data"] = [[datetime.timestamp(y[1])*1000,y[0] ] for y in cursor.fetchall()]
             for i in dico_totale:
                 out_file = open(f"{i}.js", "w")
                 out_file.write(f"var {i}_TIME_SERIES = ")
