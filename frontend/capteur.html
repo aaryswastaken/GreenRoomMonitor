@@ -8,10 +8,10 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="./Highcharts.js"></script>
-    <script src="./Temperature.js"></script>
-    <script src="./Gaz.js"></script>
-    <script src="./loc.js"></script>
-    <script src="./Son.js"></script>
+    <script src="./../backend/Temperature.js"></script>
+    <script src="./../backend/Gaz.js"></script>
+    <script src="./../backend/loc.js"></script>
+    <script src="./../backend/Son.js"></script>
     <style>
       .modal {
         position: absolute;
@@ -65,15 +65,15 @@
       document.getElementById('container-2').innerHTML = '';
       document.getElementById('container-3').innerHTML = '';
 
-      if (Object.keys(Temperature_TIME_SERIES).includes(local) && Object.keys(Temperature_TIME_SERIES[local]).includes(room) && Object.keys(Temperature_TIME_SERIES[local][room]).includes(id)){
+      if (Object.keys(Temperature_TIME_SERIES).includes(local) && Object.keys(Temperature_TIME_SERIES[local]).includes(room)) {
         buildLineChart('container-1', Temperature_TIME_SERIES[local][room][id].donnees, 'Température', 'Température (°C)', Temperature_TIME_SERIES[local][room].loc);
       }
 
-      if (Object.keys(Son_TIME_SERIES).includes(local) && Object.keys(Son_TIME_SERIES[local]).includes(room) && Object.keys(Son_TIME_SERIES[local][room]).includes(id) ) {
+      if (Object.keys(Son_TIME_SERIES).includes(local) && Object.keys(Son_TIME_SERIES[local]).includes(room)) {
         buildLineChart('container-2', Son_TIME_SERIES[local][room][id].donnees, 'Niveau sonore', 'Niveau sonore (dB)', Son_TIME_SERIES[local][room].loc);
       }
 
-      if (Object.keys(Gaz_TIME_SERIES).includes(local) && Object.keys(Gaz_TIME_SERIES[local]).includes(room) && Object.keys(Gaz_TIME_SERIES[local][room]).includes(id) ) {
+      if (Object.keys(Gaz_TIME_SERIES).includes(local) && Object.keys(Gaz_TIME_SERIES[local]).includes(room)) {
         buildMultiLineChart('container-3', Gaz_TIME_SERIES[local][room][id].donnees, Gaz_TIME_SERIES[local][room].loc);
       }
 
